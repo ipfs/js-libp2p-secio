@@ -57,8 +57,8 @@ exports.SecureSession = class SecureSession {
         if (err) dp.emit('error', err)
 
         // Restore methods to avoid overhead
-        //reader.read = originalRead
-        //writer.write = originalWrite
+        reader.read = originalRead
+        writer.write = originalWrite
 
         // Pipe things together
         dp.pipe(this.secure)
