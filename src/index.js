@@ -2,6 +2,7 @@
 
 const duplexify = require('duplexify')
 const lpstream = require('length-prefixed-stream')
+const PassThrough = require('readable-stream').PassThrough
 
 const handshake = require('./handshake')
 
@@ -40,12 +41,44 @@ exports.SecureSession = class SecureSession {
     }
   }
 
-  secureStream (cb) {
-    this.handshake((err) => {
-      if (err) return cb(err)
+  secureStream () {
+    let handshaked = false
+    const reader = new PassThrough()
+    const writer = new PassThrough()
+    const dp = duplexify(writer, reader)
+    const originalRead = reader.read.bind(reader)
+    const originalWrite = writer.write.bind(writer)
 
-      cb(null, this.secure)
-    })
+    const doHandshake = () => {
+      if (handshaked) return
+
+      handshaked = true
+      this.handshake((err) => {
+        if (err) dp.emit('error', err)
+
+        // Restore methods to avoid overhead
+        //reader.read = originalRead
+        //writer.write = originalWrite
+
+        // Pipe things together
+        dp.pipe(this.secure)
+        this.secure.pipe(dp)
+      })
+    }
+
+    // patch to detect first read
+    reader.read = (size) => {
+      doHandshake()
+      originalRead(size)
+    }
+
+    // patch to detect first write
+    writer.write = (chunk, encoding, callback) => {
+      doHandshake()
+      originalWrite(chunk, encoding, callback)
+    }
+
+    return dp
   }
 
   handshake (cb) {
