@@ -34,7 +34,7 @@
     "node-forge": "^0.6.39",
     "peer-id": "^0.7.0",
     "protocol-buffers": "^3.1.6",
-    "readable-stream": "2.1.4",
+    "readable-stream": "2.1.5",
     "run-series": "^1.1.4",
     "through2": "^2.0.1"
   },
