@@ -39,7 +39,7 @@
     "through2": "^2.0.1"
   },
   "devDependencies": {
-    "aegir": "^6.0.0",
+    "aegir": "^7.0.0",
     "bl": "^1.1.2",
     "chai": "^3.5.0",
     "multistream-select": "^0.10.0",
