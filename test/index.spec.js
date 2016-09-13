@@ -7,6 +7,7 @@ const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
 const parallel = require('run-parallel')
 const series = require('run-series')
+const waterfall = require('run-waterfall')
 const ms = require('multistream-select')
 const pull = require('pull-stream')
 const Listener = ms.Listener
@@ -21,23 +22,26 @@ describe('libp2p-secio', () => {
 
   it('upgrades a connection', (done) => {
     const p = pair()
+    createSession(p[0], (err, local) => {
+      if (err) return done(err)
+      createSession(p[1], (err, remote) => {
+        if (err) return done(err)
 
-    const local = createSession(p[0])
-    const remote = createSession(p[1])
+        pull(
+          pull.values(['hello world']),
+          local
+        )
 
-    pull(
-      pull.values(['hello world']),
-      local
-    )
-
-    pull(
-      remote,
-      pull.collect((err, chunks) => {
-        expect(err).to.not.exist
-        expect(chunks).to.be.eql([new Buffer('hello world')])
-        done()
+        pull(
+          remote,
+          pull.collect((err, chunks) => {
+            expect(err).to.not.exist
+            expect(chunks).to.be.eql([new Buffer('hello world')])
+            done()
+          })
+        )
       })
-    )
+    })
   })
 
   it('works over multistream', (done) => {
@@ -54,25 +58,29 @@ describe('libp2p-secio', () => {
       ], cb),
       (cb) => {
         listener.addHandler('/banana/1.0.0', (conn) => {
-          local = createSession(conn)
-          pull(
-            local,
-            pull.collect((err, chunks) => {
-              expect(err).to.not.exist
-              expect(chunks).to.be.eql([new Buffer('hello world')])
-              done()
-            })
-          )
+          createSession(conn, (err, local) => {
+            if (err) return done(err)
+            pull(
+              local,
+              pull.collect((err, chunks) => {
+                expect(err).to.not.exist
+                expect(chunks).to.be.eql([new Buffer('hello world')])
+                done()
+              })
+            )
+          })
         })
         cb()
       },
       (cb) => dialer.select('/banana/1.0.0', (err, conn) => {
-        remote = createSession(conn)
-        pull(
-          pull.values(['hello world']),
-          remote
-        )
-        cb(err)
+        createSession(conn, (err, remote) => {
+          if (err) return cb(err)
+          pull(
+            pull.values(['hello world']),
+            remote
+          )
+          cb()
+        })
       })
     ], (err) => {
       if (err) throw err
@@ -80,9 +88,13 @@ describe('libp2p-secio', () => {
   })
 })
 
-function createSession (insecure) {
-  const key = crypto.generateKeyPair('RSA', 2048)
-  const id = PeerId.createFromPrivKey(key.bytes)
+function createSession (insecure, cb) {
+  crypto.generateKeyPair('RSA', 2048, (err, key) => {
+    if (err) {
+      return cb(err)
+    }
 
-  return secio.encrypt(id, key, insecure)
+    const id = PeerId.createFromPrivKey(key.bytes)
+    cb(null, secio.encrypt(id, key, insecure))
+  })
 }
