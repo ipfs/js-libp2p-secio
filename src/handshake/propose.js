@@ -24,13 +24,16 @@ module.exports = function propose (state, cb) {
 
     try {
       crypto.identify(state, msg)
-      crypto.selectProtocols(state)
     } catch (err) {
       return cb(err)
     }
+    crypto.selectProtocols(state, (err) => {
+      if (err) {
+        return cb(err)
+      }
 
-    log('1. propose - finish')
-
-    cb()
+      log('1. propose - finish')
+      cb()
+    })
   })
 }

@@ -1,13 +1,12 @@
 /* eslint-env mocha */
 'use strict'
-
+require('loud-rejection')()
 const pair = require('pull-pair/duplex')
 const expect = require('chai').expect
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
 const parallel = require('run-parallel')
 const series = require('run-series')
-const waterfall = require('run-waterfall')
 const ms = require('multistream-select')
 const pull = require('pull-stream')
 const Listener = ms.Listener
@@ -23,9 +22,14 @@ describe('libp2p-secio', () => {
   it('upgrades a connection', (done) => {
     const p = pair()
     createSession(p[0], (err, local) => {
-      if (err) return done(err)
+      if (err) {
+        return done(err)
+      }
+
       createSession(p[1], (err, remote) => {
-        if (err) return done(err)
+        if (err) {
+          return done(err)
+        }
 
         pull(
           pull.values(['hello world']),
@@ -94,7 +98,12 @@ function createSession (insecure, cb) {
       return cb(err)
     }
 
-    const id = PeerId.createFromPrivKey(key.bytes)
-    cb(null, secio.encrypt(id, key, insecure))
+    key.public.hash((err, digest) => {
+      if (err) {
+        return cb(err)
+      }
+
+      cb(null, secio.encrypt(new PeerId(digest, key), key, insecure))
+    })
   })
 }

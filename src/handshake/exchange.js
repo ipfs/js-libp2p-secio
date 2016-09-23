@@ -14,22 +14,33 @@ module.exports = function exchange (state, cb) {
   log('2. exchange - start')
 
   log('2. exchange - writing exchange')
-  support.write(state, crypto.createExchange(state))
-  support.read(state.shake, (err, msg) => {
+  crypto.createExchange(state, (err, ex) => {
     if (err) {
       return cb(err)
     }
 
-    log('2. exchange - reading exchange')
+    support.write(state, ex)
+    support.read(state.shake, (err, msg) => {
+      if (err) {
+        return cb(err)
+      }
 
-    try {
-      crypto.verify(state, msg)
-      crypto.generateKeys(state)
-    } catch (err) {
-      return cb(err)
-    }
+      log('2. exchange - reading exchange')
 
-    log('2. exchange - finish')
-    cb()
+      crypto.verify(state, msg, (err) => {
+        if (err) {
+          return cb(err)
+        }
+
+        try {
+          crypto.generateKeys(state)
+        } catch (err) {
+          return cb(err)
+        }
+
+        log('2. exchange - finish')
+        cb()
+      })
+    })
   })
 }

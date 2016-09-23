@@ -1,3 +1,6 @@
+'use strict'
+
+module.exports = new Buffer(`
 message Propose {
 	optional bytes rand = 1;
 	optional bytes pubkey = 2;
@@ -10,3 +13,4 @@ message Exchange {
 	optional bytes epubkey = 1;
 	optional bytes signature = 2;
 }
+`)
