@@ -3,6 +3,7 @@
 const protobuf = require('protocol-buffers')
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
+const parallel = require('run-parallel')
 const debug = require('debug')
 const log = debug('libp2p:secio')
 log.error = debug('libp2p:secio:error')
@@ -27,33 +28,38 @@ exports.createProposal = (state) => {
   return state.proposalEncoded.out
 }
 
-exports.createExchange = (state, cb) => {
-  const res = crypto.generateEphemeralKeyPair(state.protocols.local.curveT)
-  state.ephemeralKey.local = res.key
-  state.shared.generate = res.genSharedKey
-
-  // Gather corpus to sign.
-  const selectionOut = Buffer.concat([
-    state.proposalEncoded.out,
-    state.proposalEncoded.in,
-    state.ephemeralKey.local
-  ])
-
-  state.key.local.sign(selectionOut, (err, sig) => {
+exports.createExchange = (state, callback) => {
+  crypto.generateEphemeralKeyPair(state.protocols.local.curveT, (err, res) => {
     if (err) {
-      return cb(err)
+      return callback(err)
     }
 
-    state.exchange.out = {
-      epubkey: state.ephemeralKey.local,
-      signature: sig
-    }
+    state.ephemeralKey.local = res.key
+    state.shared.generate = res.genSharedKey
 
-    cb(null, pbm.Exchange.encode(state.exchange.out))
+    // Gather corpus to sign.
+    const selectionOut = Buffer.concat([
+      state.proposalEncoded.out,
+      state.proposalEncoded.in,
+      state.ephemeralKey.local
+    ])
+
+    state.key.local.sign(selectionOut, (err, sig) => {
+      if (err) {
+        return callback(err)
+      }
+
+      state.exchange.out = {
+        epubkey: state.ephemeralKey.local,
+        signature: sig
+      }
+
+      callback(null, pbm.Exchange.encode(state.exchange.out))
+    })
   })
 }
 
-exports.identify = (state, msg) => {
+exports.identify = (state, msg, callback) => {
   log('1.1 identify')
 
   state.proposalEncoded.in = msg
@@ -61,12 +67,19 @@ exports.identify = (state, msg) => {
   const pubkey = state.proposal.in.pubkey
 
   state.key.remote = crypto.unmarshalPublicKey(pubkey)
-  state.id.remote = PeerId.createFromPubKey(pubkey.toString('base64'))
+  PeerId.createFromPubKey(pubkey.toString('base64'), (err, remoteId) => {
+    if (err) {
+      return callback(err)
+    }
 
-  log('1.1 identify - %s - identified remote peer as %s', state.id.local.toB58String(), state.id.remote.toB58String())
+    state.id.remote = remoteId
+
+    log('1.1 identify - %s - identified remote peer as %s', state.id.local.toB58String(), state.id.remote.toB58String())
+    callback()
+  })
 }
 
-exports.selectProtocols = (state, cb) => {
+exports.selectProtocols = (state, callback) => {
   log('1.2 selection')
 
   const local = {
@@ -87,7 +100,7 @@ exports.selectProtocols = (state, cb) => {
 
   support.selectBest(local, remote, (err, selected) => {
     if (err) {
-      return cb(err)
+      return callback(err)
     }
     // we use the same params for both directions (must choose same curve)
     // WARNING: if they dont SelectBest the same way, this won't work...
@@ -104,11 +117,11 @@ exports.selectProtocols = (state, cb) => {
       cipherT: selected.cipherT,
       hashT: selected.hashT
     }
-    cb()
+    callback()
   })
 }
 
-exports.verify = (state, msg, cb) => {
+exports.verify = (state, msg, callback) => {
   log('2.1. verify')
 
   state.exchange.in = pbm.Exchange.decode(msg)
@@ -122,46 +135,55 @@ exports.verify = (state, msg, cb) => {
 
   state.key.remote.verify(selectionIn, state.exchange.in.signature, (err, sigOk) => {
     if (err) {
-      return cb(err)
+      return callback(err)
     }
 
     if (!sigOk) {
-      return cb(new Error('Bad signature'))
+      return callback(new Error('Bad signature'))
     }
 
     log('2.1. verify - signature verified')
-    cb()
+    callback()
   })
 }
 
-exports.generateKeys = (state) => {
+exports.generateKeys = (state, callback) => {
   log('2.2. keys')
 
-  state.shared.secret = state.shared.generate(state.exchange.in.epubkey)
+  waterfall([
+    (cb) => state.shared.generate(state.exchange.in.epubkey, cb),
+    (secret, cb) => {
+      state.shared.secret = secret
 
-  const keys = crypto.keyStretcher(
-    state.protocols.local.cipherT,
-    state.protocols.local.hashT,
-    state.shared.secret
-  )
+      crypto.keyStretcher(
+        state.protocols.local.cipherT,
+        state.protocols.local.hashT,
+        state.shared.secret,
+        cb
+      )
+    },
+    (keys, cb) => {
+      // use random nonces to decide order.
+      if (state.protocols.local.order > 0) {
+        state.protocols.local.keys = keys.k1
+        state.protocols.remote.keys = keys.k2
+      } else if (state.protocols.local.order < 0) {
+        // swap
+        state.protocols.local.keys = keys.k2
+        state.protocols.remote.keys = keys.k1
+      } else {
+        // we should've bailed before state. but if not, bail here.
+        return cb(new Error('you are trying to talk to yourself'))
+      }
 
-  // use random nonces to decide order.
-  if (state.protocols.local.order > 0) {
-    state.protocols.local.keys = keys.k1
-    state.protocols.remote.keys = keys.k2
-  } else if (state.protocols.local.order < 0) {
-    // swap
-    state.protocols.local.keys = keys.k2
-    state.protocols.remote.keys = keys.k1
-  } else {
-    // we should've bailed before state. but if not, bail here.
-    throw new Error('you are trying to talk to yourself')
-  }
+      log('2.3. mac + cipher')
 
-  log('2.3. mac + cipher')
-
-  support.makeMacAndCipher(state.protocols.local)
-  support.makeMacAndCipher(state.protocols.remote)
+      parallel([
+        (cb) => support.makeMacAndCipher(state.protocols.local, cb),
+        (cb) => support.makeMacAndCipher(state.protocols.remote, cb)
+      ], cb)
+    }
+  ], callback)
 }
 
 exports.verifyNonce = (state, n2) => {

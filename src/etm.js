@@ -13,12 +13,10 @@ exports.createBoxStream = (cipher, mac) => {
   const pt = through(function (chunk) {
     const data = cipher.encrypt(chunk)
 
-    if (data.length > 0) {
-      this.queue(Buffer.concat([
-        data,
-        mac.digest(data)
-      ]))
-    }
+    this.queue(Buffer.concat([
+      data,
+      mac.digest(data)
+    ]))
   })
 
   return pull(
@@ -47,11 +45,8 @@ exports.createUnboxStream = (decipher, mac) => {
     }
 
     // all good, decrypt
-    const encrypted = decipher.decipher(data)
-
-    if (encrypted.length > 0) {
-      this.queue(encrypted)
-    }
+    const decrypted = decipher.decipher(data)
+    this.queue(decrypted)
   })
 
   return pull(

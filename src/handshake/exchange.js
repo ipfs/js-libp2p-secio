@@ -1,6 +1,7 @@
 'use strict'
 
 const debug = require('debug')
+const waterfall = require('run-waterfall')
 
 const support = require('../support')
 const crypto = require('./crypto')
@@ -14,33 +15,23 @@ module.exports = function exchange (state, cb) {
   log('2. exchange - start')
 
   log('2. exchange - writing exchange')
-  crypto.createExchange(state, (err, ex) => {
+  waterfall([
+    (cb) => crypto.createExchange(state, cb),
+    (ex, cb) => {
+      support.write(state, ex)
+      support.read(state.shake, cb)
+    },
+    (msg, cb) => {
+      log('2. exchange - reading exchange')
+      crypto.verify(state, msg, cb)
+    },
+    (cb) => crypto.generateKeys(state, cb)
+  ], (err) => {
     if (err) {
       return cb(err)
     }
 
-    support.write(state, ex)
-    support.read(state.shake, (err, msg) => {
-      if (err) {
-        return cb(err)
-      }
-
-      log('2. exchange - reading exchange')
-
-      crypto.verify(state, msg, (err) => {
-        if (err) {
-          return cb(err)
-        }
-
-        try {
-          crypto.generateKeys(state)
-        } catch (err) {
-          return cb(err)
-        }
-
-        log('2. exchange - finish')
-        cb()
-      })
-    })
+    log('2. exchange - finish')
+    cb()
   })
 }

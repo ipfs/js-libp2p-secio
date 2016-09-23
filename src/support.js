@@ -4,6 +4,7 @@ const mh = require('multihashing')
 const lp = require('pull-length-prefixed')
 const pull = require('pull-stream')
 const crypto = require('libp2p-crypto')
+const parallel = require('run-parallel')
 
 exports.exchanges = [
   'P-256',
@@ -47,9 +48,14 @@ exports.theBest = (order, p1, p2) => {
   throw new Error('No algorithms in common!')
 }
 
-exports.makeMacAndCipher = (target) => {
-  target.mac = makeMac(target.hashT, target.keys.macKey)
-  target.cipher = makeCipher(target.cipherT, target.keys.iv, target.keys.cipherKey)
+exports.makeMacAndCipher = (target, callback) => {
+  parallel([
+    (cb) => makeMac(target.hashT, target.keys.macKey, cb),
+    (cb) => makeCipher(target.cipherT, target.keys.iv, target.keys.cipherKey, c)
+  ], (err, mac, cipher) => {
+    target.mac = mac
+    target.cipher = cipher
+  })
 }
 
 function makeMac (hash, key, callback) {
@@ -66,7 +72,7 @@ function makeCipher (cipherType, iv, key, callback) {
 }
 
 exports.randomBytes = (nonceSize) => {
-  return Buffer.from(crypto.webcrypto.getRandomValues(Uint8Array(nonceSize)))
+  return Buffer.from(crypto.webcrypto.getRandomValues(new Uint8Array(nonceSize)))
 }
 
 exports.selectBest = (local, remote, cb) => {
