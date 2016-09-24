@@ -1,12 +1,15 @@
+/* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 'use strict'
+
 require('loud-rejection')()
+
 const pair = require('pull-pair/duplex')
 const expect = require('chai').expect
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
-const parallel = require('run-parallel')
-const series = require('run-series')
+const parallel = require('async/parallel')
+const series = require('async/series')
 const ms = require('multistream-select')
 const pull = require('pull-stream')
 const Listener = ms.Listener
@@ -33,7 +36,10 @@ describe('libp2p-secio', () => {
 
         pull(
           pull.values(['hello world']),
-          local
+          local,
+          pull.onEnd((err) => {
+            if (err) throw err
+          })
         )
 
         pull(
@@ -53,8 +59,7 @@ describe('libp2p-secio', () => {
 
     const listener = new Listener()
     const dialer = new Dialer()
-    let local
-    let remote
+
     series([
       (cb) => parallel([
         (cb) => listener.handle(p[0], cb),
@@ -63,7 +68,9 @@ describe('libp2p-secio', () => {
       (cb) => {
         listener.addHandler('/banana/1.0.0', (conn) => {
           createSession(conn, (err, local) => {
-            if (err) return done(err)
+            if (err) {
+              return done(err)
+            }
             pull(
               local,
               pull.collect((err, chunks) => {
@@ -77,11 +84,20 @@ describe('libp2p-secio', () => {
         cb()
       },
       (cb) => dialer.select('/banana/1.0.0', (err, conn) => {
+        if (err) {
+          return cb(err)
+        }
+
         createSession(conn, (err, remote) => {
-          if (err) return cb(err)
+          if (err) {
+            return cb(err)
+          }
           pull(
             pull.values(['hello world']),
-            remote
+            remote,
+            pull.onEnd((err) => {
+              if (err) throw err
+            })
           )
           cb()
         })

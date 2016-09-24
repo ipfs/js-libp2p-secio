@@ -4,7 +4,7 @@ const mh = require('multihashing')
 const lp = require('pull-length-prefixed')
 const pull = require('pull-stream')
 const crypto = require('libp2p-crypto')
-const parallel = require('run-parallel')
+const parallel = require('async/parallel')
 
 exports.exchanges = [
   'P-256',
@@ -51,10 +51,16 @@ exports.theBest = (order, p1, p2) => {
 exports.makeMacAndCipher = (target, callback) => {
   parallel([
     (cb) => makeMac(target.hashT, target.keys.macKey, cb),
-    (cb) => makeCipher(target.cipherT, target.keys.iv, target.keys.cipherKey, c)
-  ], (err, mac, cipher) => {
-    target.mac = mac
-    target.cipher = cipher
+    (cb) => makeCipher(target.cipherT, target.keys.iv, target.keys.cipherKey, cb)
+  ], (err, macAndCipher) => {
+    console.log('got mac', err, macAndCipher)
+    if (err) {
+      return callback(err)
+    }
+
+    target.mac = macAndCipher[0]
+    target.cipher = macAndCipher[1]
+    callback()
   })
 }
 

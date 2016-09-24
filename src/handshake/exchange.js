@@ -1,7 +1,7 @@
 'use strict'
 
 const debug = require('debug')
-const waterfall = require('run-waterfall')
+const waterfall = require('async/waterfall')
 
 const support = require('../support')
 const crypto = require('./crypto')
