@@ -53,7 +53,6 @@ exports.makeMacAndCipher = (target, callback) => {
     (cb) => makeMac(target.hashT, target.keys.macKey, cb),
     (cb) => makeCipher(target.cipherT, target.keys.iv, target.keys.cipherKey, cb)
   ], (err, macAndCipher) => {
-    console.log('got mac', err, macAndCipher)
     if (err) {
       return callback(err)
     }

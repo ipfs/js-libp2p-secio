@@ -2,8 +2,6 @@
 /* eslint-env mocha */
 'use strict'
 
-require('loud-rejection')()
-
 const pair = require('pull-pair/duplex')
 const expect = require('chai').expect
 const PeerId = require('peer-id')
@@ -35,11 +33,8 @@ describe('libp2p-secio', () => {
         }
 
         pull(
-          pull.values(['hello world']),
-          local,
-          pull.onEnd((err) => {
-            if (err) throw err
-          })
+          pull.values([new Buffer('hello world')]),
+          local
         )
 
         pull(
@@ -93,17 +88,16 @@ describe('libp2p-secio', () => {
             return cb(err)
           }
           pull(
-            pull.values(['hello world']),
-            remote,
-            pull.onEnd((err) => {
-              if (err) throw err
-            })
+            pull.values([new Buffer('hello world')]),
+            remote
           )
           cb()
         })
       })
     ], (err) => {
-      if (err) throw err
+      if (err) {
+        throw err
+      }
     })
   })
 })

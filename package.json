@@ -7,15 +7,22 @@
   "scripts": {
     "lint": "aegir-lint",
     "build": "aegir-build",
-    "test": "aegir-test",
+    "test": "PHANTOM=off aegir-test",
     "test:node": "aegir-test --env node",
-    "test:browser": "aegir-test --env browser",
-    "release": "aegir-release",
-    "release-minor": "aegir-release --type minor",
-    "release-major": "aegir-release --type major",
+    "test:browser": "PHANTOM=off aegir-test --env browser",
+    "release": "PHANTOM=off aegir-release",
+    "release-minor": "PHANTOM=off aegir-release --type minor",
+    "release-major": "PHANTOM=off aegir-release --type major",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish",
-    "bench": "node benchmarks/send.js"
+    "bench": "node benchmarks/send.js",
+    "test:jest": "jest",
+    "test:mocha": "mocha"
+  },
+  "jest": {
+    "browser": false,
+    "testEnvironment": "node",
+    "testPathDirs": ["test/"]
   },
   "keywords": [
     "IPFS",
@@ -36,8 +43,7 @@
     "pull-defer": "^0.2.2",
     "pull-handshake": "^1.1.4",
     "pull-length-prefixed": "^1.2.0",
-    "pull-stream": "^3.4.5",
-    "pull-through": "^1.0.18"
+    "pull-stream": "^3.4.5"
   },
   "devDependencies": {
     "aegir": "^8.1.1",

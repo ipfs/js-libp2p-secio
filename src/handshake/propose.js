@@ -2,7 +2,7 @@
 
 const debug = require('debug')
 const waterfall = require('async/waterfall')
-debug.enable('libp2p*')
+
 const support = require('../support')
 const crypto = require('./crypto')
 
