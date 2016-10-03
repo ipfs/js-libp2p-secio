@@ -15,14 +15,7 @@
     "release-major": "PHANTOM=off aegir-release --type major",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish",
-    "bench": "node benchmarks/send.js",
-    "test:jest": "jest",
-    "test:mocha": "mocha"
-  },
-  "jest": {
-    "browser": false,
-    "testEnvironment": "node",
-    "testPathDirs": ["test/"]
+    "bench": "node benchmarks/send.js"
   },
   "keywords": [
     "IPFS",
@@ -30,7 +23,7 @@
     "crypto",
     "rsa"
   ],
-  "author": "Friedel Ziegelmayer <dignifiedqurie@gmail.com>",
+  "author": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "async": "^2.0.1",
