@@ -1,6 +1,6 @@
 'use strict'
 
-const mh = require('multihashing')
+const mh = require('multihashing-async')
 const lp = require('pull-length-prefixed')
 const pull = require('pull-stream')
 const crypto = require('libp2p-crypto')
