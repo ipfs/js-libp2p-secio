@@ -38,7 +38,7 @@
     "pull-stream": "^3.4.5"
   },
   "devDependencies": {
-    "aegir": "^8.1.1",
+    "aegir": "^9.0.0",
     "benchmark": "^2.1.1",
     "chai": "^3.5.0",
     "multistream-select": "^0.11.1",
