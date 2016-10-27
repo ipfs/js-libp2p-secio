@@ -2,17 +2,16 @@
   "name": "libp2p-secio",
   "version": "0.5.0",
   "description": "Secio implementation in JavaScript",
-  "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "main": "src/index.js",
   "scripts": {
     "lint": "aegir-lint",
     "build": "aegir-build",
-    "test": "PHANTOM=off aegir-test",
+    "test": "aegir-test",
     "test:node": "aegir-test --env node",
-    "test:browser": "PHANTOM=off aegir-test --env browser",
-    "release": "PHANTOM=off aegir-release",
-    "release-minor": "PHANTOM=off aegir-release --type minor",
-    "release-major": "PHANTOM=off aegir-release --type major",
+    "test:browser": "aegir-test --env browser",
+    "release": "aegir-release",
+    "release-minor": "aegir-release --type minor",
+    "release-major": "aegir-release --type major",
     "coverage": "aegir-coverage",
     "coverage-publish": "aegir-coverage publish",
     "bench": "node benchmarks/send.js"
@@ -52,7 +51,7 @@
     "test"
   ],
   "engines": {
-    "node": "^4.0.0"
+    "node": ">=4.0.0"
   },
   "repository": {
     "type": "git",
