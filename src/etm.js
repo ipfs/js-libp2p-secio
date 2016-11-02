@@ -21,10 +21,7 @@ exports.createBoxStream = (cipher, mac) => {
             return cb(err)
           }
 
-          cb(null, Buffer.concat([
-            data,
-            digest
-          ]))
+          cb(null, Buffer.concat([data, digest]))
         })
       })
     }),

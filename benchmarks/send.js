@@ -1,3 +1,5 @@
+'use strict'
+
 const Benchmark = require('benchmark')
 const pull = require('pull-stream')
 const pair = require('pull-pair/duplex')
@@ -11,6 +13,9 @@ const ids = []
 
 suite.add('createKey', function (d) {
   crypto.generateKeyPair('RSA', 2048, (err, key) => {
+    if (err) {
+      throw err
+    }
     PeerId.createFromPrivKey(key.bytes, (err, id) => {
       if (err) {
         throw err
@@ -22,7 +27,7 @@ suite.add('createKey', function (d) {
 }, {
   defer: true
 })
-.add('send', function (d) {
+.add('send', function (deferred) {
   const p = pair()
 
   createSession(p[0], (err, local) => {
@@ -51,7 +56,7 @@ suite.add('createKey', function (d) {
       pull.collect((err, chunks) => {
         if (err) throw err
         if (chunks.length !== 100) throw new Error('Did not receive enough chunks')
-        d.resolve()
+        deferred.resolve()
       })
     )
   }
@@ -63,9 +68,8 @@ suite.add('createKey', function (d) {
 })
 // run async
 .run({
-  'async': true
+  async: true
 })
-
 
 function createSession (insecure, cb) {
   crypto.generateKeyPair('RSA', 2048, (err, key) => {
