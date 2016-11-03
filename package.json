@@ -30,7 +30,7 @@
     "libp2p-crypto": "^0.6.1",
     "multihashing": "^0.2.1",
     "node-forge": "^0.6.42",
-    "peer-id": "^0.7.0",
+    "peer-id": "^0.8.0",
     "protocol-buffers": "^3.1.6",
     "pull-defer": "^0.2.2",
     "pull-handshake": "^1.1.4",
