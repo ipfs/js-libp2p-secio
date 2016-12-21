@@ -26,7 +26,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.1.2",
-    "debug": "^2.3.2",
+    "debug": "^2.5.0",
     "interface-connection": "^0.3.0",
     "libp2p-crypto": "^0.7.2",
     "multihashing-async": "^0.3.0",
