@@ -29,7 +29,7 @@
     "debug": "^2.6.0",
     "interface-connection": "^0.3.0",
     "libp2p-crypto": "^0.7.6",
-    "multihashing-async": "^0.3.0",
+    "multihashing-async": "^0.4.1",
     "peer-id": "^0.8.1",
     "protocol-buffers": "^3.2.1",
     "pull-defer": "^0.2.2",
