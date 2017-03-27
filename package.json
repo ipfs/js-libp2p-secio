@@ -43,7 +43,7 @@
     "chai": "^3.5.0",
     "dirty-chai": "^1.2.2",
     "gulp": "^3.9.1",
-    "libp2p-websockets": "~0.9.4",
+    "libp2p-websockets": "~0.10.0",
     "multistream-select": "^0.13.5",
     "pre-commit": "^1.2.2",
     "pull-goodbye": "0.0.1",
