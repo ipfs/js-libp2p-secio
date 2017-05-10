@@ -35,7 +35,7 @@
     "pull-defer": "^0.2.2",
     "pull-handshake": "^1.1.4",
     "pull-length-prefixed": "^1.2.0",
-    "pull-stream": "^3.5.0"
+    "pull-stream": "^3.5.1"
   },
   "devDependencies": {
     "aegir": "^11.0.0",
