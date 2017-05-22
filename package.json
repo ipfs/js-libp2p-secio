@@ -25,7 +25,7 @@
   "author": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "async": "^2.1.5",
+    "async": "^2.4.1",
     "debug": "^2.6.3",
     "interface-connection": "~0.3.2",
     "libp2p-crypto": "~0.8.6",
