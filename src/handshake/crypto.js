@@ -1,5 +1,6 @@
 'use strict'
 
+const mh = require('@arve.knudsen/multihashes')
 const protons = require('protons')
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
@@ -77,7 +78,15 @@ exports.identify = (state, msg, callback) => {
     // If we know who we are dialing to, double check
     if (state.id.remote) {
       if (state.id.remote.toB58String() !== remoteId.toB58String()) {
-        return callback(new Error('dialed to the wrong peer, Ids do not match'))
+        if (pubkey.length > 42) {
+          return callback(new Error('dialed to the wrong peer, Ids do not match'))
+        }
+
+        // This peer ID may have been calculated with identity hash
+        const idPeerId = mh.encode(pubkey, 'identity')
+        if (state.id.remote.toB58String() !== mh.toB58String(idPeerId)) {
+          return callback(new Error('dialed to the wrong peer, Ids do not match'))
+        }
       }
     } else {
       state.id.remote = remoteId
