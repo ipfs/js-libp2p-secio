@@ -1,6 +1,6 @@
 'use strict'
 
-const mh = require('@arve.knudsen/multihashes')
+const mh = require('multihashes')
 const protons = require('protons')
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
