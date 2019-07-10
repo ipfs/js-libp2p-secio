@@ -14,6 +14,7 @@ const series = require('async/series')
 const Buffer = require('safe-buffer').Buffer
 const ms = require('multistream-select')
 const pull = require('pull-stream')
+const mh = require('multihashes')
 const Listener = ms.Listener
 const Dialer = ms.Dialer
 
@@ -25,17 +26,27 @@ describe('secio', () => {
   let peerA
   let peerB
   let peerC
+  let inlinedPeer
+  let tooLongInlinedPeer
 
   before((done) => {
     parallel([
       (cb) => PeerId.createFromJSON(require('./fixtures/peer-a'), cb),
       (cb) => PeerId.createFromJSON(require('./fixtures/peer-b'), cb),
-      (cb) => PeerId.createFromJSON(require('./fixtures/peer-c'), cb)
+      (cb) => PeerId.createFromJSON(require('./fixtures/peer-c'), cb),
+      (cb) => PeerId.createFromPrivKey(
+        Buffer.from('CAISILN6EuBtgy8Q85FrUGG+4KGTJOpa6dzacCKjPhB2DpD7', 'base64'),
+        cb
+      )
     ], (err, peers) => {
       expect(err).to.not.exist()
       peerA = peers[0]
       peerB = peers[1]
       peerC = peers[2]
+      const inlinedId = mh.encode(peers[3].pubKey.bytes, 'identity')
+      inlinedPeer = new PeerId(inlinedId, peers[3].privKey)
+      const tooLongInlinedId = mh.encode(peers[2].pubKey.bytes, 'identity')
+      tooLongInlinedPeer = new PeerId(tooLongInlinedId, peers[2].privKey)
       done()
     })
   })
@@ -124,12 +135,60 @@ describe('secio', () => {
 
         expect(chunks).to.eql([Buffer.from('hello world')])
 
-        bToA.getPeerInfo((err, PeerInfo) => {
+        bToA.getPeerInfo((err, peerInfo) => {
           expect(err).to.not.exist()
-          expect(PeerInfo.id.toB58String()).to.equal(peerA.toB58String())
+          expect(peerInfo.id.toB58String()).to.equal(peerA.toB58String())
           done()
         })
       })
+    )
+  })
+
+  it('supports remote peer ID with inlined public key', (done) => {
+    const p = pair()
+
+    const aToB = secio.encrypt(inlinedPeer, new Connection(p[0]), peerB, (err) => {
+      expect(err).to.not.exist()
+    })
+    const bToA = secio.encrypt(peerB, new Connection(p[1]), inlinedPeer, (err) => {
+      expect(err).to.not.exist()
+    })
+
+    pull(
+      pull.values([Buffer.from('hello world')]),
+      aToB
+    )
+
+    pull(
+      bToA,
+      pull.collect((err, chunks) => {
+        expect(err).to.not.exist()
+
+        expect(chunks).to.eql([Buffer.from('hello world')])
+
+        bToA.getPeerInfo((err, peerInfo) => {
+          expect(err).to.not.exist()
+          expect(peerInfo.id.toB58String()).to.equal(inlinedPeer.toB58String())
+          done()
+        })
+      })
+    )
+  })
+
+  it('fails if remote peer ID is too long to for inlined public key', (done) => {
+    const p = pair()
+
+    const aToB = secio.encrypt(tooLongInlinedPeer, new Connection(p[0]), peerB, (err) => {
+      expect(err).to.exist()
+    })
+    secio.encrypt(peerB, new Connection(p[1]), tooLongInlinedPeer, (err) => {
+      expect(err).to.exist()
+      done()
+    })
+
+    pull(
+      pull.values([Buffer.from('hello world')]),
+      aToB
     )
   })
 
