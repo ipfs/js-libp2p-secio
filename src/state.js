@@ -2,8 +2,17 @@
 
 const handshake = require('pull-handshake')
 const deferred = require('pull-defer')
-
+/**
+ * @class
+ */
 class State {
+  /**
+   * 
+   * @param {string} localId 
+   * @param {string} remoteId 
+   * @param {number} timeout 
+   * @param {function} callback 
+   */
   constructor (localId, remoteId, timeout, callback) {
     if (typeof timeout === 'function') {
       callback = timeout
@@ -24,7 +33,9 @@ class State {
     this.shake = this.stream.handshake
     delete this.stream.handshake
   }
-
+  /**
+   * Setup
+   */
   setup () {
     this.id = { local: null, remote: null }
     this.key = { local: null, remote: null }
@@ -32,7 +43,9 @@ class State {
     this.cleanSecrets()
   }
 
-  // remove all data from the handshake that is not needed anymore
+  /**
+   * remove all data from the handshake that is not needed anymore
+   */
   cleanSecrets () {
     this.shared = {}
 

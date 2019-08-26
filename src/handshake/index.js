@@ -1,5 +1,7 @@
 'use strict'
-
+/**
+ * @module handshake
+ */
 const series = require('async/series')
 
 const propose = require('./propose')
@@ -8,6 +10,10 @@ const finish = require('./finish')
 
 // Performs initial communication over insecure channel to share keys, IDs,
 // and initiate communication, assigning all necessary params.
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 module.exports = function handshake (state, callback) {
   series([
     (cb) => propose(state, cb),

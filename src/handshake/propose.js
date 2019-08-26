@@ -1,5 +1,7 @@
 'use strict'
-
+/**
+ * @module handshake/propose
+ */
 const debug = require('debug')
 const waterfall = require('async/waterfall')
 
@@ -11,6 +13,10 @@ log.error = debug('libp2p:secio:error')
 
 // step 1. Propose
 // -- propose cipher suite + send pubkeys + nonce
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 module.exports = function propose (state, callback) {
   log('1. propose - start')
 

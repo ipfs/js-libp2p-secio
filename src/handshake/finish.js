@@ -1,5 +1,7 @@
 'use strict'
-
+/**
+ * @module handshake/finish
+ */
 const pull = require('pull-stream/pull')
 const pullError = require('pull-stream/sources/error')
 const handshake = require('pull-handshake')
@@ -12,7 +14,13 @@ const etm = require('../etm')
 const crypto = require('./crypto')
 
 // step 3. Finish
-// -- send expected message to verify encryption works (send local nonce)
+// -- 
+/**
+ * send expected message to verify encryption works (send local nonce)
+ *
+ * @param {object} state
+ * @param {function} callback
+ */
 module.exports = function finish (state, callback) {
   log('3. finish - start')
 

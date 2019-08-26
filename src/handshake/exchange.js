@@ -1,5 +1,7 @@
 'use strict'
-
+/**
+ * @module handshake/exchange
+ */
 const debug = require('debug')
 const waterfall = require('async/waterfall')
 
@@ -11,6 +13,10 @@ log.error = debug('libp2p:secio:error')
 
 // step 2. Exchange
 // -- exchange (signed) ephemeral keys. verify signatures.
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 module.exports = function exchange (state, callback) {
   log('2. exchange - start')
 

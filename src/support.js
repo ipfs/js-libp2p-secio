@@ -1,4 +1,7 @@
 'use strict'
+/**
+ * @module support
+ */
 
 const mh = require('multihashing-async')
 const lp = require('pull-length-prefixed')
@@ -8,23 +11,38 @@ const collect = require('pull-stream/sinks/collect')
 const crypto = require('libp2p-crypto')
 const parallel = require('async/parallel')
 
+/**
+ * @exports support/exchanges
+ */
 exports.exchanges = [
   'P-256',
   'P-384',
   'P-521'
 ]
 
+/**
+ * @exports support/ciphers
+ */
 exports.ciphers = [
   'AES-256',
   'AES-128'
 ]
 
+/**
+ * @exports support/hashes
+ */
 exports.hashes = [
   'SHA256',
   'SHA512'
 ]
 
-// Determines which algorithm to use.  Note:  f(a, b) = f(b, a)
+/**
+ *  @exports support/theBest
+ * Determines which algorithm to use.  Note:  f(a, b) = f(b, a)
+ * @param {number} order
+ * @param {Array<*>} p1
+ * @param {*} p2
+ */
 exports.theBest = (order, p1, p2) => {
   let first
   let second
@@ -49,7 +67,10 @@ exports.theBest = (order, p1, p2) => {
 
   throw new Error('No algorithms in common!')
 }
-
+/**
+ * @param {object} target
+ * @param {function} callback
+ */
 exports.makeMacAndCipher = (target, callback) => {
   parallel([
     (cb) => makeMac(target.hashT, target.keys.macKey, cb),
@@ -78,6 +99,11 @@ function makeCipher (cipherType, iv, key, callback) {
   callback(new Error(`unrecognized cipher type: ${cipherType}`))
 }
 
+/**
+ * @param {object} local
+ * @param {object} remote
+ * @param {function} cb
+ */
 exports.selectBest = (local, remote, cb) => {
   exports.digest(Buffer.concat([
     remote.pubKeyBytes,
@@ -111,10 +137,19 @@ exports.selectBest = (local, remote, cb) => {
   })
 }
 
+/**
+ * @param {Buffer} buf
+ * @param {function} cb
+ */
 exports.digest = (buf, cb) => {
   mh.digest(buf, 'sha2-256', buf.length, cb)
 }
 
+/**
+ * @param {object} state
+ * @param {string} msg
+ * @param {function} cb
+ */
 exports.write = function write (state, msg, cb) {
   cb = cb || (() => {})
   pull(
@@ -130,6 +165,10 @@ exports.write = function write (state, msg, cb) {
   )
 }
 
+/**
+ * @param {*} reader
+ * @param {function} cb
+ */
 exports.read = function read (reader, cb) {
   lp.decodeFromReader(reader, { fixed: true, bytes: 4 }, cb)
 }

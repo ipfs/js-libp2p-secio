@@ -12,8 +12,22 @@ log.error = debug('libp2p:secio:error')
 const handshake = require('./handshake')
 const State = require('./state')
 
+/**
+ * @module js-libp2p-secio
+ */
+
 module.exports = {
+  /**
+   * @type {string}
+   */
   tag: '/secio/1.0.0',
+  /**
+   * Encrypt
+   * @param {*} localId 
+   * @param {*} conn 
+   * @param {*} remoteId 
+   * @param {*} callback 
+   */
   encrypt (localId, conn, remoteId, callback) {
     assert(localId, 'no local private key provided')
     assert(conn, 'no connection for the handshake  provided')

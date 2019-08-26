@@ -10,6 +10,10 @@ const lpOpts = {
   bytes: 4
 }
 
+/**
+ * @param {object} cipher
+ * @param {function} mac
+ */
 exports.createBoxStream = (cipher, mac) => {
   return pull(
     ensureBuffer(),
@@ -32,6 +36,10 @@ exports.createBoxStream = (cipher, mac) => {
   )
 }
 
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 exports.createUnboxStream = (decipher, mac) => {
   return pull(
     ensureBuffer(),
@@ -70,6 +78,10 @@ exports.createUnboxStream = (decipher, mac) => {
   )
 }
 
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 function ensureBuffer () {
   return map((c) => {
     if (typeof c === 'string') {

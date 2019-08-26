@@ -4,6 +4,7 @@
   "description": "Secio implementation in JavaScript",
   "leadMaintainer": "Friedel Ziegelmayer <dignifiedquire@gmail.com>",
   "main": "src/index.js",
+  "typings": "src/types.d.ts",
   "scripts": {
     "lint": "aegir lint",
     "build": "aegir build",
@@ -15,7 +16,8 @@
     "release-major": "aegir release --type major -t node browser",
     "coverage": "aegir coverage",
     "coverage-publish": "aegir coverage publish",
-    "benchmark": "node benchmarks/send.js"
+    "benchmark": "node benchmarks/send.js",
+    "generate-typings": "./node_modules/.bin/jsdoc -c ./.jsdoc.json"
   },
   "keywords": [
     "IPFS",
@@ -46,10 +48,13 @@
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
+    "jsdoc": "^3.6.3",
     "libp2p-websockets": "~0.12.2",
     "multistream-select": "~0.14.4",
     "pull-goodbye": "~0.0.2",
-    "pull-pair": "^1.1.0"
+    "pull-pair": "^1.1.0",
+    "tsd-jsdoc": "^2.3.1",
+    "typescript-definition-tester": "0.0.6"
   },
   "engines": {
     "node": ">=6.0.0",

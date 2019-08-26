@@ -1,5 +1,7 @@
 'use strict'
-
+/**
+ * @module handshake/crypto
+ */
 const protons = require('protons')
 const PeerId = require('peer-id')
 const crypto = require('libp2p-crypto')
@@ -16,6 +18,9 @@ const support = require('../support')
 // nonceSize is the size of our nonces (in bytes)
 const nonceSize = 16
 
+/**
+ * @param {object} state
+ */
 exports.createProposal = (state) => {
   state.proposal.out = {
     rand: crypto.randomBytes(nonceSize),
@@ -29,6 +34,10 @@ exports.createProposal = (state) => {
   return state.proposalEncoded.out
 }
 
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 exports.createExchange = (state, callback) => {
   crypto.keys.generateEphemeralKeyPair(state.protocols.local.curveT, (err, res) => {
     if (err) {
@@ -59,7 +68,11 @@ exports.createExchange = (state, callback) => {
     })
   })
 }
-
+/**
+ * @param {object} state
+ * @param {string} msg
+ * @param {function} callback
+ */
 exports.identify = (state, msg, callback) => {
   log('1.1 identify')
 
@@ -87,7 +100,10 @@ exports.identify = (state, msg, callback) => {
     callback()
   })
 }
-
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 exports.selectProtocols = (state, callback) => {
   log('1.2 selection')
 
@@ -129,7 +145,11 @@ exports.selectProtocols = (state, callback) => {
     callback()
   })
 }
-
+/**
+ * @param {object} state
+ * @param {string} msg
+ * @param {function} callback
+ */
 exports.verify = (state, msg, callback) => {
   log('2.1. verify')
 
@@ -156,6 +176,10 @@ exports.verify = (state, msg, callback) => {
   })
 }
 
+/**
+ * @param {object} state
+ * @param {function} callback
+ */
 exports.generateKeys = (state, callback) => {
   log('2.2. keys')
 
@@ -195,6 +219,10 @@ exports.generateKeys = (state, callback) => {
   ], callback)
 }
 
+/**
+ * @param {object} state
+ * @param {string} n2
+ */
 exports.verifyNonce = (state, n2) => {
   const n1 = state.proposal.out.rand
 

@@ -1,5 +1,8 @@
 'use strict'
-
+/**
+ * @module handshake/secio
+ * @type {string}
+ */
 module.exports = `message Propose {
   optional bytes rand = 1;
   optional bytes pubkey = 2;
