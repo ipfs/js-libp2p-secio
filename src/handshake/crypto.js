@@ -11,6 +11,8 @@ const pbm = protons(require('./secio.proto'))
 
 const support = require('../support')
 
+const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
+
 // nonceSize is the size of our nonces (in bytes)
 const nonceSize = 16
 
@@ -64,7 +66,7 @@ exports.identify = async (state, msg) => {
   // If we know who we are dialing to, double check
   if (state.id.remote) {
     if (state.id.remote.toB58String() !== remoteId.toB58String()) {
-      throw new Error('dialed to the wrong peer, Ids do not match')
+      throw new UnexpectedPeerError('Dialed to the wrong peer: IDs do not match!')
     }
   } else {
     state.id.remote = remoteId
