@@ -31,7 +31,7 @@
     "it-handshake": "^1.0.1",
     "it-length-prefixed": "^2.0.0",
     "it-pair": "^1.0.0",
-    "it-pb-rpc": "^0.1.1",
+    "it-pb-rpc": "^0.1.2",
     "it-pipe": "^1.1.0",
     "libp2p-crypto": "~0.17.1",
     "libp2p-interfaces": "~0.1.3",

@@ -5,7 +5,6 @@ class State {
     this.setup()
 
     this.id.local = localId
-    // TODO use remoteId to verify PeersIdentity
     this.id.remote = remoteId
     this.key.local = localId.privKey
     this.timeout = timeout || 60 * 1000

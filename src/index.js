@@ -28,5 +28,4 @@ module.exports = {
   // since SECIO is symetric, we only need one function here
   secureInbound: secure,
   secureOutbound: secure
-
 }
