@@ -1,10 +1,9 @@
 'use strict'
 
 const mh = require('multihashing-async')
-const lp = require('pull-length-prefixed')
-const pull = require('pull-stream/pull')
-const values = require('pull-stream/sources/values')
-const collect = require('pull-stream/sinks/collect')
+const lp = require('it-length-prefixed')
+const pipe = require('it-pipe')
+const { values, collect } = require('streaming-iterables')
 const crypto = require('libp2p-crypto')
 
 exports.exchanges = [
@@ -120,4 +119,8 @@ exports.read = function read (reader) {
   return new Promise((resolve, reject) => {
     lp.decodeFromReader(reader, { fixed: true, bytes: 4 }, (err, res) => err ? reject(err) : resolve(res))
   })
+}
+
+exports.wrap = (duplex) => {
+
 }

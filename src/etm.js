@@ -1,10 +1,5 @@
 'use strict'
 
-const pull = require('pull-stream/pull')
-const map = require('pull-stream/throughs/map')
-const asyncMap = require('pull-stream/throughs/async-map')
-const lp = require('pull-length-prefixed')
-
 const lpOpts = {
   fixed: true,
   bytes: 4

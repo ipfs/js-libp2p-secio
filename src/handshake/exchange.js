@@ -10,14 +10,14 @@ log.error = debug('libp2p:secio:error')
 
 // step 2. Exchange
 // -- exchange (signed) ephemeral keys. verify signatures.
-module.exports = async function exchange (state) {
+module.exports = async function exchange (state, wrapped) {
   log('2. exchange - start')
 
   log('2. exchange - writing exchange')
   const ex = await crypto.createExchange(state)
 
-  support.write(state, ex)
-  const msg = await support.read(state.shake)
+  await wrapped.writeSingle(ex)
+  const msg = await wrapped.readSingle()
 
   log('2. exchange - reading exchange')
   await crypto.verify(state, msg)

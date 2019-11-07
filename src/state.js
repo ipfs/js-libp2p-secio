@@ -1,34 +1,5 @@
 'use strict'
 
-const handshake = require('pull-handshake')
-const deferred = require('pull-defer')
-
-const defer = (timeout) => {
-  let _resolve
-  let _reject
-
-  let fired = false
-  function lock (d) {
-    if (fired) {
-      throw new Error('already fired!')
-    }
-    fired = false
-
-    d()
-  }
-
-  const prom = new Promise((resolve, reject) => {
-    _resolve = resolve
-    _reject = reject
-  })
-
-  prom.resolve = (...a) => process.nextTick(() => lock(() => _resolve(...a)))
-  prom.reject = (...a) => process.nextTick(() => lock(() => _reject(...a)))
-  setTimeout(() => prom.reject(new Error('Timeout')), timeout)
-
-  return prom
-}
-
 class State {
   constructor (localId, remoteId, timeout) {
     this.setup()
@@ -39,10 +10,6 @@ class State {
     this.key.local = localId.privKey
     this.timeout = timeout || 60 * 1000
 
-    this.awaitConnected = defer(this.timeout)
-
-    this.secure = deferred.duplex()
-    this.stream = handshake({ timeout: this.timeout }, (err) => this.awaitConnected.reject(err))
     this.shake = this.stream.handshake
     delete this.stream.handshake
   }

@@ -10,14 +10,14 @@ log.error = debug('libp2p:secio:error')
 
 // step 1. Propose
 // -- propose cipher suite + send pubkeys + nonce
-module.exports = async function propose (state) {
+module.exports = async function propose (state, wrapped) {
   log('1. propose - start')
 
   log('1. propose - writing proposal')
-  support.write(state, crypto.createProposal(state))
+  await wrapped.writeSingle(crypto.createProposal(state))
 
   log('1. propose - reading proposal')
-  const msg = await support.read(state.shake)
+  const msg = await wrapped.readSingle()
   log('1. propose - read proposal', msg)
 
   await crypto.identify(state, msg)

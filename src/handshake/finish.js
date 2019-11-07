@@ -1,10 +1,6 @@
 'use strict'
 
-const pull = require('pull-stream/pull')
-const pullError = require('pull-stream/sources/error')
-const handshake = require('pull-handshake')
 const debug = require('debug')
-
 const log = debug('libp2p:secio')
 log.error = debug('libp2p:secio:error')
 
