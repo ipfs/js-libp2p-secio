@@ -5,7 +5,7 @@ const BufferList = require('bl/BufferList')
 exports.createBoxStream = (cipher, mac) => {
   return async function * (source) {
     for await (const chunk of source) {
-      const data = await chunk.encrypt(chunk)
+      const data = await cipher.encrypt(chunk)
       const digest = await mac.digest(data)
       yield new BufferList().append(data).append(digest)
     }
