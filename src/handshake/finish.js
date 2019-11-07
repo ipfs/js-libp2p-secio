@@ -20,7 +20,7 @@ module.exports = async function finish (state, wrapped) {
   wrapped.write(state.proposal.in.rand)
   const nonceBack = await wrapped.read(state.proposal.in.rand.length)
 
-  crypto.verifyNonce(state, nonceBack)
+  crypto.verifyNonce(state, nonceBack.slice())
 
   log('3. finish - finish')
 

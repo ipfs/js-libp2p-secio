@@ -9,9 +9,6 @@ class State {
     this.id.remote = remoteId
     this.key.local = localId.privKey
     this.timeout = timeout || 60 * 1000
-
-    this.shake = this.stream.handshake
-    delete this.stream.handshake
   }
 
   setup () {

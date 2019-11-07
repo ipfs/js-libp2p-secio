@@ -1,10 +1,8 @@
 'use strict'
 
-const debug = require('debug')
-
-const support = require('../support')
 const crypto = require('./crypto')
 
+const debug = require('debug')
 const log = debug('libp2p:secio')
 log.error = debug('libp2p:secio:error')
 
@@ -20,7 +18,7 @@ module.exports = async function exchange (state, wrapped) {
   const msg = await wrapped.readLP()
 
   log('2. exchange - reading exchange')
-  await crypto.verify(state, msg)
+  await crypto.verify(state, msg.slice())
 
   await crypto.generateKeys(state)
   log('2. exchange - finish')

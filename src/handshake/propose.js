@@ -18,9 +18,9 @@ module.exports = async function propose (state, wrapped) {
 
   log('1. propose - reading proposal')
   const msg = await wrapped.readLP()
-  log('1. propose - read proposal', msg)
+  log('1. propose - read proposal', msg.slice())
 
-  await crypto.identify(state, msg)
+  await crypto.identify(state, msg.slice())
   await crypto.selectProtocols(state)
 
   log('1. propose - finish')
