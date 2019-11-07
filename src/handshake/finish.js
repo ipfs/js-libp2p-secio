@@ -6,6 +6,8 @@ log.error = debug('libp2p:secio:error')
 
 const DuplexPair = require('it-pair/duplex')
 const pipe = require('it-pipe')
+const lp = require('it-length-prefixed')
+const ensureBuffer = require('it-buffer')
 
 const etm = require('../etm')
 const crypto = require('./crypto')
@@ -14,9 +16,6 @@ const lpOptions = {
   fixed: true,
   bytes: 4
 }
-
-const lp = require('pull-length-prefixed')
-const ensureBuffer = require('it-buffer')
 
 // step 3. Finish
 // -- send expected message to verify encryption works (send local nonce)
