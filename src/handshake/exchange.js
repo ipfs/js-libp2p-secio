@@ -16,8 +16,8 @@ module.exports = async function exchange (state, wrapped) {
   log('2. exchange - writing exchange')
   const ex = await crypto.createExchange(state)
 
-  await wrapped.writeSingle(ex)
-  const msg = await wrapped.readSingle()
+  await wrapped.writeLP(ex)
+  const msg = await wrapped.readLP()
 
   log('2. exchange - reading exchange')
   await crypto.verify(state, msg)

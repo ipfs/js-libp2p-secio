@@ -8,13 +8,11 @@ log.error = debug('libp2p:secio:error')
 
 const handshake = require('./handshake')
 const State = require('./state')
-const Wrap = require('./wrap')
+const Wrap = require('it-pb-rpc')
 
 async function secure (localPeer, duplex, remotePeer) { // returns duplex
   assert(localPeer, 'no local private key provided')
   assert(duplex, 'no connection for the handshake provided')
-
-  console.log(duplex)
 
   const timeout = 60 * 1000 * 5
   const state = new State(localPeer, remotePeer, timeout)

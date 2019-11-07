@@ -1,9 +1,6 @@
 'use strict'
 
 const mh = require('multihashing-async')
-const lp = require('it-length-prefixed')
-const pipe = require('it-pipe')
-const { values, collect } = require('streaming-iterables')
 const crypto = require('libp2p-crypto')
 
 exports.exchanges = [
@@ -97,30 +94,4 @@ exports.selectBest = async (local, remote) => {
 
 exports.digest = (buf) => {
   return mh.digest(buf, 'sha2-256', buf.length)
-}
-
-exports.write = function write (state, msg) {
-  return new Promise((resolve, reject) => {
-    pull(
-      values([msg]),
-      lp.encode({ fixed: true, bytes: 4 }),
-      collect((err, res) => {
-        if (err) {
-          return reject(err)
-        }
-        state.shake.write(res[0])
-        resolve()
-      })
-    )
-  })
-}
-
-exports.read = function read (reader) {
-  return new Promise((resolve, reject) => {
-    lp.decodeFromReader(reader, { fixed: true, bytes: 4 }, (err, res) => err ? reject(err) : resolve(res))
-  })
-}
-
-exports.wrap = (duplex) => {
-
 }

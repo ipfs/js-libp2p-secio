@@ -14,10 +14,10 @@ module.exports = async function propose (state, wrapped) {
   log('1. propose - start')
 
   log('1. propose - writing proposal')
-  await wrapped.writeSingle(crypto.createProposal(state))
+  await wrapped.writeLP(crypto.createProposal(state))
 
   log('1. propose - reading proposal')
-  const msg = await wrapped.readSingle()
+  const msg = await wrapped.readLP()
   log('1. propose - read proposal', msg)
 
   await crypto.identify(state, msg)
