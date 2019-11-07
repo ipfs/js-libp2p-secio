@@ -3,49 +3,39 @@
 /* eslint-disable no-console */
 
 const Benchmark = require('benchmark')
-const pull = require('pull-stream/pull')
-const infinite = require('pull-stream/sources/infinite')
-const take = require('pull-stream/throughs/take')
-const drain = require('pull-stream/sinks/drain')
-const Connection = require('interface-connection').Connection
-const pair = require('pull-pair/duplex')
 const PeerId = require('peer-id')
 
-const secio = require('../src')
+const pipe = require('it-pipe')
+const { reduce } = require('streaming-iterables')
+const DuplexPair = require('it-pair/duplex')
+
+const secio = require('..')
 
 const suite = new Benchmark.Suite('secio')
 let peers
 
-function sendData (a, b, opts, finish) {
+async function sendData (a, b, opts, finish) {
   opts = Object.assign({ times: 1, size: 100 }, opts)
 
-  pull(
-    infinite(() => Buffer.allocUnsafe(opts.size)),
-    take(opts.times),
-    a
-  )
+  let i = opts.times
 
-  let length = 0
-
-  pull(
-    b,
-    drain((data) => {
-      length += data.length
-    }, () => {
-      if (length !== opts.times * opts.size) {
-        throw new Error('Did not receive enough chunks')
+  pipe(
+    function * () {
+      while (i--) {
+        yield Buffer.allocUnsafe(opts.size)
       }
-      finish.resolve()
-    })
+    },
+    a.sink
   )
-}
 
-function ifErr (conn) {
-  conn.awaitConnected.catch(err => {
-    console.error(err.stack)
-    throw err // TODO: make this better
-  })
-  return conn
+  const res = await pipe(
+    b.source,
+    reduce((acc, val) => acc + val.length, 0)
+  )
+
+  if (res !== opts.times * opts.size) {
+    throw new Error('Did not receive enough chunks')
+  }
 }
 
 suite.add('create peers for test', async () => {
@@ -55,17 +45,17 @@ suite.add('create peers for test', async () => {
   ])
 })
 
-suite.add('establish an encrypted channel', (deferred) => {
-  const p = pair()
+suite.add('establish an encrypted channel', async () => {
+  const p = DuplexPair()
 
   const peerA = peers[0]
   const peerB = peers[1]
 
-  const aToB = ifErr(secio.encrypt(peerA, new Connection(p[0]), peerB))
-  const bToA = ifErr(secio.encrypt(peerB, new Connection(p[1]), peerA))
+  const aToB = await secio.secureInbound(peerA, p[0], peerB)
+  const bToA = await secio.secureOutbound(peerB, p[0], peerA)
 
-  sendData(aToB, bToA, {}, deferred)
-}, { defer: true })
+  await sendData(aToB.conn, bToA.conn, {})
+})
 
 const cases = [
   [10, 262144],
@@ -79,23 +69,23 @@ cases.forEach((el) => {
   const times = el[0]
   const size = el[1]
 
-  suite.add(`send plaintext ${times} x ${size} bytes`, (deferred) => {
-    const p = pair()
+  suite.add(`send plaintext ${times} x ${size} bytes`, async () => {
+    const p = DuplexPair()
 
-    sendData(p[0], p[1], { times: times, size: size }, deferred)
-  }, { defer: true })
+    await sendData(p[0], p[1], { times: times, size: size })
+  })
 
-  suite.add(`send encrypted ${times} x ${size} bytes`, (deferred) => {
-    const p = pair()
+  suite.add(`send encrypted ${times} x ${size} bytes`, async () => {
+    const p = DuplexPair()
 
     const peerA = peers[0]
     const peerB = peers[1]
 
-    const aToB = ifErr(secio.encrypt(peerA, new Connection(p[0]), peerB))
-    const bToA = ifErr(secio.encrypt(peerB, new Connection(p[1]), peerA))
+    const aToB = await secio.secureInbound(peerA, p[0], peerB)
+    const bToA = await secio.secureOutbound(peerB, p[0], peerA)
 
-    sendData(aToB, bToA, { times: times, size: size }, deferred)
-  }, { defer: true })
+    await sendData(aToB.conn, bToA.conn, { times: times, size: size })
+  })
 })
 
 suite.on('cycle', (event) => {
