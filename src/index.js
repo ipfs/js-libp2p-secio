@@ -19,7 +19,10 @@ async function secure (localPeer, duplex, remotePeer) { // returns duplex
   const wrapped = Wrap(duplex)
   await handshake(state, wrapped)
 
-  return state.secure
+  return {
+    conn: state.secure,
+    remotePeer: state.id.remote
+  }
 }
 
 module.exports = {
