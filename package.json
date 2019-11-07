@@ -26,6 +26,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "^3.1.0",
+    "bl": "^4.0.0",
     "debug": "^4.1.1",
     "it-buffer": "^0.1.1",
     "it-handshake": "^1.0.1",

@@ -3,6 +3,8 @@
 const mh = require('multihashing-async')
 const crypto = require('libp2p-crypto')
 
+const { InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
+
 exports.exchanges = [
   'P-256',
   'P-384',
@@ -42,7 +44,7 @@ exports.theBest = (order, p1, p2) => {
     }
   }
 
-  throw new Error('No algorithms in common!')
+  throw new InvalidCryptoExchangeError('No algorithms in common!')
 }
 
 exports.makeMacAndCipher = async (target) => {
@@ -65,7 +67,7 @@ function makeCipher (cipherType, iv, key) {
   }
 
   // TODO: figure out if Blowfish is needed and if so find a library for it.
-  throw new Error(`unrecognized cipher type: ${cipherType}`)
+  throw new InvalidCryptoExchangeError(`unrecognized cipher type: ${cipherType}`)
 }
 
 exports.selectBest = async (local, remote) => {
@@ -81,7 +83,7 @@ exports.selectBest = async (local, remote) => {
   const order = Buffer.compare(oh1, oh2)
 
   if (order === 0) {
-    throw new Error('you are trying to talk to yourself')
+    throw new InvalidCryptoExchangeError('you are trying to talk to yourself')
   }
 
   return {

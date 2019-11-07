@@ -11,7 +11,7 @@ const pbm = protons(require('./secio.proto'))
 
 const support = require('../support')
 
-const { UnexpectedPeerError, InvalidCryptoExchangeError } = require('libp2p-interfaces/src/crypto/errors')
+const { UnexpectedPeerError } = require('libp2p-interfaces/src/crypto/errors')
 
 // nonceSize is the size of our nonces (in bytes)
 const nonceSize = 16

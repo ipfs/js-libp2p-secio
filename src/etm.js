@@ -1,6 +1,7 @@
 'use strict'
 
 const BufferList = require('bl/BufferList')
+const { InvalidCryptoTransmissionError } = require('libp2p-interfaces/src/crypto/errors')
 
 exports.createBoxStream = (cipher, mac) => {
   return async function * (source) {
@@ -19,7 +20,7 @@ exports.createUnboxStream = (decipher, mac) => {
       const macSize = mac.length
 
       if (l < macSize) {
-        throw new Error(`buffer (${l}) shorter than MAC size (${macSize})`)
+        throw new InvalidCryptoTransmissionError(`buffer (${l}) shorter than MAC size (${macSize})`)
       }
 
       const mark = l - macSize
@@ -29,7 +30,7 @@ exports.createUnboxStream = (decipher, mac) => {
       const expected = await mac.digest(data)
 
       if (!macd.equals(expected)) {
-        throw new Error(`MAC Invalid: ${macd.toString('hex')} != ${expected.toString('hex')}`)
+        throw new InvalidCryptoTransmissionError(`MAC Invalid: ${macd.toString('hex')} != ${expected.toString('hex')}`)
       }
 
       const decrypted = await decipher.decrypt(data)
