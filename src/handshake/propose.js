@@ -1,10 +1,8 @@
 'use strict'
 
-const debug = require('debug')
-
-const support = require('../support')
 const crypto = require('./crypto')
 
+const debug = require('debug')
 const log = debug('libp2p:secio')
 log.error = debug('libp2p:secio:error')
 

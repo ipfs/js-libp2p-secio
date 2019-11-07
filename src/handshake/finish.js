@@ -10,6 +10,14 @@ const pipe = require('it-pipe')
 const etm = require('../etm')
 const crypto = require('./crypto')
 
+const lpOptions = {
+  fixed: true,
+  bytes: 4
+}
+
+const lp = require('pull-length-prefixed')
+const ensureBuffer = require('it-buffer')
+
 // step 3. Finish
 // -- send expected message to verify encryption works (send local nonce)
 module.exports = async function finish (state, wrapped) {
@@ -29,12 +37,16 @@ module.exports = async function finish (state, wrapped) {
 
   pipe(
     secure.source, // this is FROM the user
+    ensureBuffer,
     etm.createBoxStream(proto.local.cipher, proto.local.mac),
+    lp.encode(lpOptions),
     network.sink // and gets piped INTO the network
   )
 
   pipe(
     network.source, // this is FROM the network
+    lp.decode(lpOptions),
+    ensureBuffer,
     etm.createUnboxStream(proto.remote.cipher, proto.remote.mac),
     secure.sink // and gets piped TO the user
   )

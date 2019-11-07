@@ -1,76 +1,40 @@
 'use strict'
 
-const lpOpts = {
-  fixed: true,
-  bytes: 4
-}
+const BufferList = require('bl/BufferList')
 
 exports.createBoxStream = (cipher, mac) => {
-  return pull(
-    ensureBuffer(),
-    asyncMap((chunk, cb) => {
-      cipher.encrypt(chunk, (err, data) => {
-        if (err) {
-          return cb(err)
-        }
-
-        mac.digest(data, (err, digest) => {
-          if (err) {
-            return cb(err)
-          }
-
-          cb(null, Buffer.concat([data, digest]))
-        })
-      })
-    }),
-    lp.encode(lpOpts)
-  )
+  return async function * (source) {
+    for await (const chunk of source) {
+      const data = await chunk.encrypt(chunk)
+      const digest = await mac.digest(data)
+      yield new BufferList().append(data).append(digest)
+    }
+  }
 }
 
 exports.createUnboxStream = (decipher, mac) => {
-  return pull(
-    ensureBuffer(),
-    lp.decode(lpOpts),
-    asyncMap((chunk, cb) => {
+  return async function * (source) {
+    for await (const chunk of source) {
       const l = chunk.length
       const macSize = mac.length
 
       if (l < macSize) {
-        return cb(new Error(`buffer (${l}) shorter than MAC size (${macSize})`))
+        throw new Error(`buffer (${l}) shorter than MAC size (${macSize})`)
       }
 
       const mark = l - macSize
       const data = chunk.slice(0, mark)
       const macd = chunk.slice(mark)
 
-      mac.digest(data, (err, expected) => {
-        if (err) {
-          return cb(err)
-        }
+      const expected = await mac.digest(data)
 
-        if (!macd.equals(expected)) {
-          return cb(new Error(`MAC Invalid: ${macd.toString('hex')} != ${expected.toString('hex')}`))
-        }
+      if (!macd.equals(expected)) {
+        throw new Error(`MAC Invalid: ${macd.toString('hex')} != ${expected.toString('hex')}`)
+      }
 
-        // all good, decrypt
-        decipher.decrypt(data, (err, decrypted) => {
-          if (err) {
-            return cb(err)
-          }
+      const decrypted = await decipher.decrypt(data)
 
-          cb(null, decrypted)
-        })
-      })
-    })
-  )
-}
-
-function ensureBuffer () {
-  return map((c) => {
-    if (typeof c === 'string') {
-      return Buffer.from(c, 'utf-8')
+      yield decrypted
     }
-
-    return c
-  })
+  }
 }
