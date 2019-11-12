@@ -65,7 +65,7 @@ exports.identify = async (state, msg) => {
 
   // If we know who we are dialing to, double check
   if (state.id.remote) {
-    if (state.id.remote.toB58String() !== remoteId.toB58String()) {
+    if (state.id.remote.toString() !== remoteId.toString()) {
       throw new UnexpectedPeerError('Dialed to the wrong peer: IDs do not match!')
     }
   } else {

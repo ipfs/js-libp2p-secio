@@ -8,7 +8,7 @@ exports.createBoxStream = (cipher, mac) => {
     for await (const chunk of source) {
       const data = await cipher.encrypt(chunk)
       const digest = await mac.digest(data)
-      yield new BufferList().append(data).append(digest)
+      yield new BufferList([data, digest])
     }
   }
 }

@@ -52,7 +52,7 @@ suite.add('establish an encrypted channel', async () => {
   const peerB = peers[1]
 
   const aToB = await secio.secureInbound(peerA, p[0], peerB)
-  const bToA = await secio.secureOutbound(peerB, p[0], peerA)
+  const bToA = await secio.secureOutbound(peerB, p[1], peerA)
 
   await sendData(aToB.conn, bToA.conn, {})
 })
