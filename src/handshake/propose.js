@@ -15,7 +15,7 @@ module.exports = async function propose (state, wrapped) {
   await wrapped.writeLP(crypto.createProposal(state))
 
   log('1. propose - reading proposal')
-  const msg = await wrapped.readLP()
+  const msg = (await wrapped.readLP()).slice()
   log('1. propose - read proposal', msg.slice())
 
   await crypto.identify(state, msg.slice())

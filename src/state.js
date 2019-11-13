@@ -1,13 +1,12 @@
 'use strict'
 
 class State {
-  constructor (localId, remoteId, timeout) {
+  constructor (localId, remoteId) {
     this.setup()
 
     this.id.local = localId
     this.id.remote = remoteId
     this.key.local = localId.privKey
-    this.timeout = timeout || 60 * 1000
   }
 
   setup () {

@@ -13,9 +13,7 @@ async function secure (localPeer, duplex, remotePeer) { // returns duplex
   assert(localPeer, 'no local private key provided')
   assert(duplex, 'no connection for the handshake provided')
 
-  const timeout = 60 * 1000 * 5
-  const state = new State(localPeer, remotePeer, timeout)
-
+  const state = new State(localPeer, remotePeer)
   const wrapped = Wrap(duplex)
   await handshake(state, wrapped)
 
