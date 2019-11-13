@@ -12,9 +12,16 @@ const ensureBuffer = require('it-buffer')
 const etm = require('../etm')
 const crypto = require('./crypto')
 
+const lengthEncoder = (value, target, offset) => {
+  target = target || Buffer.allocUnsafe(4)
+  target.writeInt32BE(value, offset)
+  return target
+}
+lengthEncoder.bytes = 4 // Always because fixed length
+
+// TODO: maybe make this part of it-length-prefixed?
 const lpOptions = {
-  fixed: true,
-  bytes: 4
+  lengthEncoder
 }
 
 // step 3. Finish
