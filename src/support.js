@@ -48,13 +48,10 @@ exports.theBest = (order, p1, p2) => {
 }
 
 exports.makeMacAndCipher = async (target) => {
-  const macAndCipher = [ // they will run in parallel
+  [target.mac, target.cipher] = await Promise.all([
     makeMac(target.hashT, target.keys.macKey),
     makeCipher(target.cipherT, target.keys.iv, target.keys.cipherKey)
-  ]
-
-  target.mac = await macAndCipher[0] // ..but get awaited after each other
-  target.cipher = await macAndCipher[1]
+  ])
 }
 
 function makeMac (hash, key) {
