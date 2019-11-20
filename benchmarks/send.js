@@ -14,7 +14,7 @@ const secio = require('..')
 const suite = new Benchmark.Suite('secio')
 let peers
 
-async function sendData (a, b, opts, finish) {
+async function sendData (a, b, opts) {
   opts = Object.assign({ times: 1, size: 100 }, opts)
 
   let i = opts.times
@@ -25,11 +25,11 @@ async function sendData (a, b, opts, finish) {
         yield Buffer.allocUnsafe(opts.size)
       }
     },
-    a.sink
+    a
   )
 
   const res = await pipe(
-    b.source,
+    b,
     reduce((acc, val) => acc + val.length, 0)
   )
 
@@ -38,23 +38,32 @@ async function sendData (a, b, opts, finish) {
   }
 }
 
-suite.add('create peers for test', async () => {
-  peers = await Promise.all([
-    PeerId.createFromJSON(require('./peer-a')),
-    PeerId.createFromJSON(require('./peer-b'))
-  ])
+suite.add('create peers for test', {
+  defer: true,
+  fn: async (deferred) => {
+    peers = await Promise.all([
+      PeerId.createFromJSON(require('./peer-a')),
+      PeerId.createFromJSON(require('./peer-b'))
+    ])
+    deferred.resolve()
+  }
 })
+suite.add('establish an encrypted channel', {
+  defer: true,
+  fn: async (deferred) => {
+    const p = DuplexPair()
 
-suite.add('establish an encrypted channel', async () => {
-  const p = DuplexPair()
+    const peerA = peers[0]
+    const peerB = peers[1]
 
-  const peerA = peers[0]
-  const peerB = peers[1]
+    const [aToB, bToA] = await Promise.all([
+      secio.secureInbound(peerA, p[0], peerB),
+      secio.secureOutbound(peerB, p[1], peerA)
+    ])
 
-  const aToB = await secio.secureInbound(peerA, p[0], peerB)
-  const bToA = await secio.secureOutbound(peerB, p[1], peerA)
-
-  await sendData(aToB.conn, bToA.conn, {})
+    await sendData(aToB.conn, bToA.conn, {})
+    deferred.resolve()
+  }
 })
 
 const cases = [
@@ -69,22 +78,31 @@ cases.forEach((el) => {
   const times = el[0]
   const size = el[1]
 
-  suite.add(`send plaintext ${times} x ${size} bytes`, async () => {
-    const p = DuplexPair()
-
-    await sendData(p[0], p[1], { times: times, size: size })
+  suite.add(`send plaintext ${times} x ${size} bytes`, {
+    defer: true,
+    fn: async (deferred) => {
+      const p = DuplexPair()
+      await sendData(p[0], p[1], { times: times, size: size })
+      deferred.resolve()
+    }
   })
 
-  suite.add(`send encrypted ${times} x ${size} bytes`, async () => {
-    const p = DuplexPair()
+  suite.add(`send encrypted ${times} x ${size} bytes`, {
+    defer: true,
+    fn: async (deferred) => {
+      const p = DuplexPair()
 
-    const peerA = peers[0]
-    const peerB = peers[1]
+      const peerA = peers[0]
+      const peerB = peers[1]
 
-    const aToB = await secio.secureInbound(peerA, p[0], peerB)
-    const bToA = await secio.secureOutbound(peerB, p[0], peerA)
+      const [aToB, bToA] = await Promise.all([
+        secio.secureInbound(peerA, p[0], peerB),
+        secio.secureOutbound(peerB, p[1], peerA)
+      ])
 
-    await sendData(aToB.conn, bToA.conn, { times: times, size: size })
+      await sendData(aToB.conn, bToA.conn, { times: times, size: size })
+      deferred.resolve()
+    }
   })
 })
 
