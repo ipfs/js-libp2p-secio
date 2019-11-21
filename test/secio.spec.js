@@ -86,6 +86,7 @@ describe('secio', () => {
 
         // Send back their nonce over the crypto stream
         const { value: nonce } = await box([state.proposal.in.rand]).next()
+        expect(nonce.slice()).to.not.eql(state.proposal.in.rand) // The nonce should be encrypted
         const nonceLength = Buffer.allocUnsafe(4)
         nonceLength.writeInt32BE(nonce.length, 0)
         wrap.write(Buffer.concat([nonceLength, nonce.slice()]))
@@ -94,6 +95,7 @@ describe('secio', () => {
         let ourNonceRaw = (await wrap.read())
         dataLength = ourNonceRaw.readInt32BE(0)
         ourNonceRaw = ourNonceRaw.shallowSlice(4, dataLength + 4) // Unbox expects a BufferList, so shallow slice here
+        expect(ourNonceRaw.slice()).to.not.eql(state.proposal.out.rand) // The nonce should be encrypted
         const { value: ourNonce } = await unbox([ourNonceRaw]).next()
 
         // Verify our nonce is correct
@@ -158,6 +160,7 @@ describe('secio', () => {
 
         // Send back their nonce over the crypto stream
         const { value: nonce } = await box([state.proposal.in.rand]).next()
+        expect(nonce.slice()).to.not.eql(state.proposal.in.rand) // The nonce should be encrypted
         const nonceLength = Buffer.allocUnsafe(4)
         nonceLength.writeInt32BE(nonce.length, 0)
         wrap.write(Buffer.concat([nonceLength, nonce.slice()]))
@@ -166,6 +169,7 @@ describe('secio', () => {
         let ourNonceRaw = (await wrap.read())
         dataLength = ourNonceRaw.readInt32BE(0)
         ourNonceRaw = ourNonceRaw.shallowSlice(4, dataLength + 4) // Unbox expects a BufferList, so shallow slice here
+        expect(ourNonceRaw.slice()).to.not.eql(state.proposal.out.rand) // The nonce should be encrypted
         const { value: ourNonce } = await unbox([ourNonceRaw]).next()
 
         // Verify our nonce is correct
