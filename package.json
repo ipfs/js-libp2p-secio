@@ -30,7 +30,7 @@
     "it-buffer": "^0.1.1",
     "it-length-prefixed": "^3.0.0",
     "it-pair": "^1.0.0",
-    "it-pb-rpc": "jacobheun/it-pb-rpc#master",
+    "it-pb-rpc": "^0.1.4",
     "it-pipe": "^1.1.0",
     "libp2p-crypto": "~0.17.1",
     "libp2p-interfaces": "~0.1.3",
