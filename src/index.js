@@ -8,13 +8,14 @@ log.error = debug('libp2p:secio:error')
 const handshake = require('./handshake')
 const State = require('./state')
 const Wrap = require('it-pb-rpc')
+const { int32BEDecode, int32BEEncode } = require('it-length-prefixed')
 
 async function secure (localPeer, duplex, remotePeer) { // returns duplex
   assert(localPeer, 'no local private key provided')
   assert(duplex, 'no connection for the handshake provided')
 
   const state = new State(localPeer, remotePeer)
-  const wrapped = Wrap(duplex)
+  const wrapped = Wrap(duplex, { lengthDecoder: int32BEDecode, lengthEncoder: int32BEEncode })
   await handshake(state, wrapped)
 
   return {

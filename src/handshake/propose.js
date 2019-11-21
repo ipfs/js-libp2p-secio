@@ -1,7 +1,8 @@
 'use strict'
 
 const crypto = require('./crypto')
-
+const lp = require('it-length-prefixed')
+const { int32BEEncode } = lp
 const debug = require('debug')
 const log = debug('libp2p:secio')
 log.error = debug('libp2p:secio:error')
@@ -11,8 +12,10 @@ log.error = debug('libp2p:secio:error')
 module.exports = async function propose (state, wrapped) {
   log('1. propose - start')
 
-  log('1. propose - writing proposal')
-  await wrapped.writeLP(crypto.createProposal(state))
+  const prop = crypto.createProposal(state)
+  log('1. propose - writing proposal', prop)
+
+  await wrapped.write(lp.encode.single(prop, { lengthEncoder: int32BEEncode }))
 
   log('1. propose - reading proposal')
   const msg = (await wrapped.readLP()).slice()
