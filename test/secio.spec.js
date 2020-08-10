@@ -49,7 +49,8 @@ describe('secio', () => {
 
         // Read their proposal
         let theirProposalRaw = (await wrap.read()).slice()
-        let dataLength = theirProposalRaw.readInt32BE(0)
+        const theirProposalRawView = new DataView(theirProposalRaw.buffer, theirProposalRaw.byteOffset, theirProposalRaw.byteLength)
+        let dataLength = theirProposalRawView.getInt32(0)
         theirProposalRaw = theirProposalRaw.slice(4, dataLength + 4)
         const theirProposal = Propose.decode(theirProposalRaw)
         expect(theirProposal.rand).to.have.length(16)
@@ -76,7 +77,8 @@ describe('secio', () => {
 
         // Read their exchange
         let theirExchangeRaw = (await wrap.read()).slice()
-        dataLength = theirExchangeRaw.readInt32BE(0)
+        const theirExchangeRawView = new DataView(theirExchangeRaw.buffer, theirExchangeRaw.byteOffset, theirExchangeRaw.byteLength)
+        dataLength = theirExchangeRawView.getInt32(0)
         theirExchangeRaw = theirExchangeRaw.slice(4, dataLength + 4)
         await verify(state, theirExchangeRaw)
 
@@ -99,7 +101,9 @@ describe('secio', () => {
 
         // Read our nonce from the crypto stream
         let ourNonceRaw = (await wrap.read())
-        dataLength = ourNonceRaw.readInt32BE(0)
+        const ourNonceRawBuffer = ourNonceRaw.slice()
+        const ourNonceRawView = new DataView(ourNonceRawBuffer.buffer, ourNonceRawBuffer.byteOffset, ourNonceRawBuffer.byteLength)
+        dataLength = ourNonceRawView.getInt32(0)
         ourNonceRaw = ourNonceRaw.shallowSlice(4, dataLength + 4) // Unbox expects a BufferList, so shallow slice here
         expect(ourNonceRaw.slice()).to.not.eql(state.proposal.out.rand) // The nonce should be encrypted
         const { value: ourNonce } = await unbox([ourNonceRaw]).next()
@@ -134,7 +138,8 @@ describe('secio', () => {
 
         // Read their proposal
         let theirProposalRaw = (await wrap.read()).slice()
-        let dataLength = theirProposalRaw.readInt32BE(0)
+        const theirProposalRawView = new DataView(theirProposalRaw.buffer, theirProposalRaw.byteOffset, theirProposalRaw.byteLength)
+        let dataLength = theirProposalRawView.getInt32(0)
         theirProposalRaw = theirProposalRaw.slice(4, dataLength + 4)
         const theirProposal = Propose.decode(theirProposalRaw)
         expect(theirProposal.rand).to.have.length(16)
@@ -161,7 +166,8 @@ describe('secio', () => {
 
         // Read their exchange
         let theirExchangeRaw = (await wrap.read()).slice()
-        dataLength = theirExchangeRaw.readInt32BE(0)
+        const theirExchangeRawView = new DataView(theirExchangeRaw.buffer, theirExchangeRaw.byteOffset, theirExchangeRaw.byteLength)
+        dataLength = theirExchangeRawView.getInt32(0)
         theirExchangeRaw = theirExchangeRaw.slice(4, dataLength + 4)
         await verify(state, theirExchangeRaw)
 
@@ -184,7 +190,9 @@ describe('secio', () => {
 
         // Read our nonce from the crypto stream
         let ourNonceRaw = (await wrap.read())
-        dataLength = ourNonceRaw.readInt32BE(0)
+        const ourNonceRawBuffer = ourNonceRaw.slice()
+        const ourNonceRawView = new DataView(ourNonceRawBuffer.buffer, ourNonceRawBuffer.byteOffset, ourNonceRawBuffer.byteLength)
+        dataLength = ourNonceRawView.getInt32(0)
         ourNonceRaw = ourNonceRaw.shallowSlice(4, dataLength + 4) // Unbox expects a BufferList, so shallow slice here
         expect(ourNonceRaw.slice()).to.not.eql(state.proposal.out.rand) // The nonce should be encrypted
         const { value: ourNonce } = await unbox([ourNonceRaw]).next()
