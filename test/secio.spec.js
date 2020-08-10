@@ -1,10 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const chai = require('chai')
-const dirtyChai = require('dirty-chai')
-const expect = chai.expect
-chai.use(dirtyChai)
+const { expect } = require('aegir/utils/chai')
 
 const PeerId = require('peer-id')
 const duplexPair = require('it-pair/duplex')
@@ -22,6 +19,7 @@ const {
 const { createBoxStream, createUnboxStream } = require('../src/etm')
 const State = require('../src/state')
 const { Propose } = require('../src/handshake/secio.proto')
+const uint8ArrayConcat = require('uint8arrays/concat')
 
 describe('secio', () => {
   let remotePeer
@@ -43,9 +41,11 @@ describe('secio', () => {
         const proposal = createProposal(state)
 
         // Send our proposal
-        const proposalLength = Buffer.allocUnsafe(4)
-        proposalLength.writeInt32BE(proposal.length, 0)
-        wrap.write(Buffer.concat([proposalLength, proposal]))
+        const proposalBuffer = new ArrayBuffer(4)
+        const proposalLengthView = new DataView(proposalBuffer)
+        proposalLengthView.setInt32(0, proposal.length)
+        const proposalLength = new Uint8Array(proposalBuffer)
+        wrap.write(uint8ArrayConcat([proposalLength, proposal]))
 
         // Read their proposal
         let theirProposalRaw = (await wrap.read()).slice()
@@ -68,9 +68,11 @@ describe('secio', () => {
         const exchange = await createExchange(state)
 
         // Send our exchange
-        const exchangeLength = Buffer.allocUnsafe(4)
-        exchangeLength.writeInt32BE(exchange.length, 0)
-        wrap.write(Buffer.concat([exchangeLength, exchange]))
+        const exchangeBuffer = new ArrayBuffer(4)
+        const exchangeLengthView = new DataView(exchangeBuffer)
+        exchangeLengthView.setInt32(0, exchange.length)
+        const exchangeLength = new Uint8Array(exchangeBuffer)
+        wrap.write(uint8ArrayConcat([exchangeLength, exchange]))
 
         // Read their exchange
         let theirExchangeRaw = (await wrap.read()).slice()
@@ -88,9 +90,12 @@ describe('secio', () => {
         // Send back their nonce over the crypto stream
         const { value: nonce } = await box([state.proposal.in.rand]).next()
         expect(nonce.slice()).to.not.eql(state.proposal.in.rand) // The nonce should be encrypted
-        const nonceLength = Buffer.allocUnsafe(4)
-        nonceLength.writeInt32BE(nonce.length, 0)
-        wrap.write(Buffer.concat([nonceLength, nonce.slice()]))
+
+        const nonceBuffer = new ArrayBuffer(4)
+        const nonceView = new DataView(nonceBuffer)
+        nonceView.setInt32(0, nonce.length)
+        const nonceLength = new Uint8Array(nonceBuffer)
+        wrap.write(uint8ArrayConcat([nonceLength, nonce.slice()]))
 
         // Read our nonce from the crypto stream
         let ourNonceRaw = (await wrap.read())
@@ -121,9 +126,11 @@ describe('secio', () => {
         const proposal = createProposal(state)
 
         // Send our proposal
-        const proposalLength = Buffer.allocUnsafe(4)
-        proposalLength.writeInt32BE(proposal.length, 0)
-        wrap.write(Buffer.concat([proposalLength, proposal]))
+        const proposalBuffer = new ArrayBuffer(4)
+        const proposalLengthView = new DataView(proposalBuffer)
+        proposalLengthView.setInt32(0, proposal.length)
+        const proposalLength = new Uint8Array(proposalBuffer)
+        wrap.write(uint8ArrayConcat([proposalLength, proposal]))
 
         // Read their proposal
         let theirProposalRaw = (await wrap.read()).slice()
@@ -146,9 +153,11 @@ describe('secio', () => {
         const exchange = await createExchange(state)
 
         // Send our exchange
-        const exchangeLength = Buffer.allocUnsafe(4)
-        exchangeLength.writeInt32BE(exchange.length, 0)
-        wrap.write(Buffer.concat([exchangeLength, exchange]))
+        const exchangeBuffer = new ArrayBuffer(4)
+        const exchangeLengthView = new DataView(exchangeBuffer)
+        exchangeLengthView.setInt32(0, exchange.length)
+        const exchangeLength = new Uint8Array(exchangeBuffer)
+        wrap.write(uint8ArrayConcat([exchangeLength, exchange]))
 
         // Read their exchange
         let theirExchangeRaw = (await wrap.read()).slice()
@@ -166,9 +175,12 @@ describe('secio', () => {
         // Send back their nonce over the crypto stream
         const { value: nonce } = await box([state.proposal.in.rand]).next()
         expect(nonce.slice()).to.not.eql(state.proposal.in.rand) // The nonce should be encrypted
-        const nonceLength = Buffer.allocUnsafe(4)
-        nonceLength.writeInt32BE(nonce.length, 0)
-        wrap.write(Buffer.concat([nonceLength, nonce.slice()]))
+
+        const nonceBuffer = new ArrayBuffer(4)
+        const nonceView = new DataView(nonceBuffer)
+        nonceView.setInt32(0, nonce.length)
+        const nonceLength = new Uint8Array(nonceBuffer)
+        wrap.write(uint8ArrayConcat([nonceLength, nonce.slice()]))
 
         // Read our nonce from the crypto stream
         let ourNonceRaw = (await wrap.read())
